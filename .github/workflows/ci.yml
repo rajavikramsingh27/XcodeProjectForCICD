@@ -8,13 +8,13 @@ on:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-latest
 
     steps:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.3'  # use the latest available version on GitHub Actions
+          xcode-version: '15.2'  # use the latest available version on GitHub Actions
 
       - uses: actions/checkout@v4
 
