@@ -1,40 +1,80 @@
-name: Pull Request
-
-on:
-  pull_request:
-    branches:
-      - develop
-  workflow_dispatch:
-
-jobs:
-  test:
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - uses: ruby/setup-ruby@v1
-
-      - name: Install Bundler
-        run: gem install bundler
-
-      - name: Install gems
-        run: bundle install
-
-      - name: Swift Packages Cache
-        uses: actions/cache@v2
-        id: cache
-        with:
-          path: |
-            Build/SourcePackages
-            Build/Build/Products
-          key: ${{ runner.os }}-deps-v1-${{ hashFiles('BILDsolid.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
-          restore-keys: ${{ runner.os }}-deps-v1-
+-name: iOS CI
++name: Pull Request
+ 
+ on:
+-  push:
+-    branches: [master]
+   pull_request:
+-    branches: [master]
++    branches:
++      - develop
++  workflow_dispatch:
+ 
+ jobs:
+-  build-and-test:
+-    runs-on: macos-latest
+-
++  test:
++    runs-on: macos-11
+     steps:
+-      - name: Checkout code
+-        uses: actions/checkout@v4
++      - uses: actions/checkout@v2
++
++      - name: Cancel Previous Runs
++        uses: styfle/cancel-workflow-action@0.9.1
++        with:
++          access_token: ${{ github.token }}
+ 
+-      # OPTIONAL: Authenticate for private SPMs
+-      # - name: Configure Git for Private Repos
+-      #   run: git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/".insteadOf "https://github.com/"
++      - uses: maxim-lobanov/setup-xcode@v1
++        with:
++          xcode-version: latest-stable
+ 
+-      - name: Set Xcode version
+-        run: sudo xcode-select -s /Applications/Xcode_15.2.app
++      - uses: ruby/setup-ruby@v1
+ 
+-      - name: List available simulators (debug step)
+-        run: xcrun simctl list devices
++      - name: Install Bundler
++        run: gem install bundler
+ 
+-      - name: Cache DerivedData
+-        uses: actions/cache@v3
+-        with:
+-          path: DerivedData
+-          key: derived-data-${{ runner.os }}-${{ hashFiles('**/*.xcodeproj') }}
+-          restore-keys: |
+-            derived-data-${{ runner.os }}
+-
+-      - name: Build and test using xcodebuild
+-        run: |
+-          xcodebuild test \
+-            -scheme XcodeProjectForCICD \
+-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0' \
+-            -derivedDataPath DerivedData \
+-            ONLY_ACTIVE_ARCH=YES \
+-            CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+-            -enableCodeCoverage YES
+-
+-      - name: Upload test logs (optional)
+-        if: always()
+-        uses: actions/upload-artifact@v4
++      - name: Install gems
++        run: bundle install
++
++      - name: Swift Packages Cache
++        uses: actions/cache@v2
++        id: cache
+         with:
+-          name: TestLogs
+-          path: DerivedData/Logs/Test
++          path: |
++            Build/SourcePackages
++            Build/Build/Products
++          key: ${{ runner.os }}-deps-v1-${{ hashFiles('BILDsolid.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
++          restore-keys: ${{ runner.os }}-deps-v1-
+\ No newline at end of file
