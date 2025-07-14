@@ -20,11 +20,18 @@ jobs:
         swift: ["6.0"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
+      - uses: swift-actions/setup-swift@v2
+      # installs latest stable, currently Swift 6.1.0
+      - name: Get Swift version
+        run: swift --version  # Should output "Swift version 6.1.0"
+      - uses: swift-actions/setup-swift@v2
         with:
-          swift-version: ${{ matrix.swift }}
+          swift-version: "6.1.0"
+      - name: Show Swift version
+        run: swift --version
       - uses: actions/checkout@v4
       - name: Build
         run: swift build
       - name: Run tests
         run: swift test
+        
