@@ -33,6 +33,6 @@ jobs:
         run: xcrun simctl list devices
       - uses: actions/checkout@v4
       - name: Build
-        run: swift build
+        run: xcodebuild -project XcodeProjectForCICD.xcodeproj -scheme XcodeProjectForCICD build
       - name: Run tests
         run: swift test
