@@ -45,13 +45,17 @@ jobs:
           key: ${{ runner.os }}-deps-v1-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-deps-v1-
+      - name: Boot iPhone 16 simulator
+        run: |
+          xcrun simctl boot "iPhone 16" || true
+          xcrun simctl bootstatus "iPhone 16" --wait
       
       - name: Build App for Testing (No Code Signing)
         run: |
           xcodebuild build-for-testing \
           -project XcodeProjectForCICD.xcodeproj \
           -scheme XcodeProjectForCICD \
-          -destination 'platform=iOS Simulator,name=Any iOS Simulator Device' \
+          -destination 'platform=iOS Simulator,name=iPhone 16' \
           CODE_SIGNING_ALLOWED=NO
           
       - name: Install SwiftLint
