@@ -22,6 +22,9 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: List available simulators
+        run: xcrun simctl list devices
 
       - name: Set up latest Xcode
         uses: maxim-lobanov/setup-xcode@v1
