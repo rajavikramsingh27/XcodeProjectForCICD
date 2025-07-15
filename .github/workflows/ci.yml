@@ -1,9 +1,9 @@
 name: Pull Request
 
 on:
-  pull_request:
+  push:
     branches:
-      - develop
+      - master
   workflow_dispatch:
 
 jobs:
