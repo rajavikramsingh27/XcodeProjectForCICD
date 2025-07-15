@@ -49,3 +49,8 @@ jobs:
           key: ${{ runner.os }}-deps-v1-${{ hashFiles('BILDsolid.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-deps-v1-
+- name: Install SwiftLint
+  run: brew install swiftlint
+
+- name: Run SwiftLint
+  run: swiftlint
