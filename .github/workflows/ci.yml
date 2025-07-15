@@ -1,65 +1,48 @@
-name: Pull Request
+name: iOS CI
 
 on:
   push:
-    branches:
-      - master
-  workflow_dispatch:
-
-concurrency:
-  group: pull-request-${{ github.ref }}
-  cancel-in-progress: true
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  test:
-    runs-on: macos-latest
+  build-and-test:
+    name: Build & Test (iOS)
+    runs-on: macos-14
 
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: List available simulators
-        run: xcrun simctl list devices
 
-      - name: Set up latest Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+      - name: Set Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1.176.0
-        with:
-          ruby-version: '3.2'
+      - name: Resolve dependencies
+        run: swift package resolve
 
-      - name: Cache Swift Packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            Build/SourcePackages
-            Build/Build/Products
-          key: ${{ runner.os }}-deps-v1-${{ hashFiles('**/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-deps-v1-
-      - name: Boot iPhone 16 simulator
-        run: |
-          xcrun simctl boot "iPhone 15" || true
-          xcrun simctl bootstatus "iPhone 15" --wait
-      
-      - name: Build App for Testing (No Code Signing)
-        run: |
-          xcodebuild build-for-testing \
-          -project XcodeProjectForCICD.xcodeproj \
-          -scheme XcodeProjectForCICD \
-          -destination 'platform=iOS Simulator,name=iPhone 15' \
-          CODE_SIGNING_ALLOWED=NO
-          
-      - name: Install SwiftLint
-        run: brew install swiftlint
-        
       - name: Run SwiftLint
-        run: swiftlint
+        run: |
+          brew install swiftlint || echo "SwiftLint already installed"
+          swiftlint
+
+      - name: Code Analysis
+        run: xcodebuild analyze -scheme YourSchemeName -destination 'platform=iOS Simulator,name=iPhone 15'
+
+      - name: Build project
+        run: xcodebuild build -scheme YourSchemeName -destination 'platform=iOS Simulator,name=iPhone 15'
+
+      - name: Run tests
+        run: xcodebuild test -scheme YourSchemeName -destination 'platform=iOS Simulator,name=iPhone 15'
+
+      # - name: SonarQube Scan
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   run: |
+      #     brew install sonar-scanner || echo "SonarScanner already installed"
+      #     sonar-scanner \
+      #       -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+      #       -Dsonar.organization=your-org-if-sonarcloud \
+      #       -Dsonar.sources=. \
+      #       -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+      #       -Dsonar.login=${{ secrets.SONAR_TOKEN }}
