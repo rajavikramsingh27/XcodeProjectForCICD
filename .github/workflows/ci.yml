@@ -30,7 +30,9 @@ jobs:
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1.176.0
-
+        with:
+          ruby-version: '3.2'  # 👈 or your desired Ruby version
+          
       - name: Install Bundler
         run: gem install bundler
 
