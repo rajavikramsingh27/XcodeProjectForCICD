@@ -15,13 +15,13 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.11.0
         with:
-          access_token: ${{ github.token }}
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up latest Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -31,26 +31,24 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1.176.0
         with:
-          ruby-version: '3.2'  # 👈 or your desired Ruby version
-          
-      # - name: Install Bundler
-      #   run: gem install bundler
-
-      # - name: Install Gems
-      #   run: bundle install
+          ruby-version: '3.2'
 
       - name: Cache Swift Packages
         uses: actions/cache@v4
-        id: cache
         with:
           path: |
             Build/SourcePackages
             Build/Build/Products
-          key: ${{ runner.os }}-deps-v1-${{ hashFiles('BILDsolid.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          key: ${{ runner.os }}-deps-v1-${{ hashFiles('**/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-deps-v1-
-        - name: Install SwiftLint
-  run: brew install swiftlint
+      
+      - name: Run Tests
+        run: xcodebuild test -scheme YourScheme -destination 'platform=iOS Simulator,name=iPhone 15'
 
-- name: Run SwiftLint
-  run: swiftlint
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint
