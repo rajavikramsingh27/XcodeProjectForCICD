@@ -44,8 +44,7 @@ jobs:
             ${{ runner.os }}-deps-v1-
       
       - name: Run Tests
-        run: xcodebuild test -scheme YourScheme -destination 'platform=iOS Simulator,name=iPhone 15'
-
+        run: xcodebuild test -scheme XcodeProjectForCICD -destination 'platform=iOS Simulator,name=iPhone 15'
 
       - name: Install SwiftLint
         run: brew install swiftlint
