@@ -46,9 +46,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deps-v1-
       
-      - name: Run Tests
-        run: xcodebuild test -scheme XcodeProjectForCICD -destination 'platform=iOS Simulator,name=iPhone 15'
-
+      - name: Build App for Testing (No Code Signing)
+        run: |
+          xcodebuild build-for-testing \
+          -project XcodeProjectForCICD.xcodeproj \
+          -scheme XcodeProjectForCICD \
+          -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
+          CODE_SIGNING_ALLOWED=NO
+          
       - name: Install SwiftLint
         run: brew install swiftlint
 
