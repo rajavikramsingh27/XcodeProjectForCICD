@@ -33,11 +33,11 @@ jobs:
         with:
           ruby-version: '3.2'  # 👈 or your desired Ruby version
           
-      - name: Install Bundler
-        run: gem install bundler
+      # - name: Install Bundler
+      #   run: gem install bundler
 
-      - name: Install Gems
-        run: bundle install
+      # - name: Install Gems
+      #   run: bundle install
 
       - name: Cache Swift Packages
         uses: actions/cache@v4
