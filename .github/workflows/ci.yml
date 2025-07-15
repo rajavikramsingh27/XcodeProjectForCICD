@@ -27,13 +27,13 @@ jobs:
           swiftlint
 
       - name: Code Analysis
-        run: xcodebuild analyze -scheme YourSchemeName -destination 'platform=iOS Simulator,name=iPhone 15'
+        run: xcodebuild analyze -scheme XcodeProjectForCICD -destination 'platform=iOS Simulator,name=iPhone 15'
 
       - name: Build project
-        run: xcodebuild build -scheme YourSchemeName -destination 'platform=iOS Simulator,name=iPhone 15'
+        run: xcodebuild build -scheme XcodeProjectForCICD -destination 'platform=iOS Simulator,name=iPhone 15'
 
       - name: Run tests
-        run: xcodebuild test -scheme YourSchemeName -destination 'platform=iOS Simulator,name=iPhone 15'
+        run: xcodebuild test -scheme XcodeProjectForCICD -destination 'platform=iOS Simulator,name=iPhone 15'
 
       # - name: SonarQube Scan
       #   env:
