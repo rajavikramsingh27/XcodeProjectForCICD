@@ -46,8 +46,9 @@ jobs:
            echo "Booting simulator with UDID: $UDID"
            xcrun simctl boot "$UDID" || true
            xcrun simctl bootstatus "$UDID" -b
+           
       - name: Install xcpretty
-        run: gem install xcpretty
+        run: sudo gem install xcpretty
       - name: Build project with Xcode
         run: |
           UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16 Pro' | awk -F '[()]' '{print $2}')
@@ -63,7 +64,7 @@ jobs:
           xcodebuild test \
             -project XcodeProjectForCICD.xcodeproj \
             -scheme XcodeProjectForCICD \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.0' \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
             -enableCodeCoverage YES \
             | xcpretty
 
@@ -72,3 +73,20 @@ jobs:
           TEST_RESULT=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" | sort | tail -n 1)
           echo "Found result at: $TEST_RESULT"
           xcrun xccov view --report "$TEST_RESULT"
+      - name: Upload Code Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodeCoverageReport
+          path: path/to/code-coverage.txt
+
+      - name: Upload All CI Logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: AllLogs
+          path: logs/*.log
+
+      - name: Upload Xcode Result Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: XcodeResultBundle
+          path: result.bundle
