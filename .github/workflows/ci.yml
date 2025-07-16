@@ -34,6 +34,9 @@ jobs:
       - name: Display Swift version
         run: swift --version
 
+      - name: List available simulators
+        run: xcrun simctl list devices
+
       - name: Boot iPhone Simulator
         run: |
           UDID=$(xcrun simctl list devices | grep -m 1 'iPhone 15' | awk -F '[()]' '{print $2}')
