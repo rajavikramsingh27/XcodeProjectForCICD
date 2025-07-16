@@ -46,8 +46,9 @@ jobs:
            echo "Booting simulator with UDID: $UDID"
            xcrun simctl boot "$UDID" || true
            xcrun simctl bootstatus "$UDID" -b
+           
       - name: Install xcpretty
-        run: gem install xcpretty
+        run: sudo gem install xcpretty
       - name: Build project with Xcode
         run: |
           UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16 Pro' | awk -F '[()]' '{print $2}')
