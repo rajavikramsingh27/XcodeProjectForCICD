@@ -37,12 +37,10 @@ jobs:
       - name: List available simulators
         run: xcrun simctl list devices
 
-      - name: Boot iPhone Simulator
+      - name: Boot iPhone 16 simulator
         run: |
-          UDID=$(xcrun simctl list devices | grep -m 1 'iPhone 15' | awk -F '[()]' '{print $2}')
-          echo "Booting simulator with UDID: $UDID"
-          xcrun simctl boot "$UDID" || true
-          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl boot "iPhone 15" || true
+          xcrun simctl bootstatus "iPhone 15" --wait
 
       - name: Build project with Xcode
         run: |
