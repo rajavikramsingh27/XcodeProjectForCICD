@@ -39,8 +39,8 @@ jobs:
 
       - name: Boot iPhone 16 simulator
         run: |
-          xcrun simctl boot "iPhone 15" || true
-          xcrun simctl bootstatus "iPhone 15" --wait
+          xcrun simctl boot "iPhone 16" || true
+          xcrun simctl bootstatus "iPhone 16" --wait
 
       - name: Build project with Xcode
         run: |
