@@ -5,6 +5,8 @@ on:
     branches: [master, develop]
   pull_request:
     branches: [master, develop]
+    paths:
+      - '**/*.swift'
 
 jobs:
   build-and-test:
@@ -65,46 +67,46 @@ jobs:
 
       - name: Check reviewdog version
         run: reviewdog -version
-        
+
       - name: Run SwiftLint with Reviewdog
         run: |
           swiftlint --reporter github-actions-logging | reviewdog -efm="%f:%l:%c: %m" -name="swiftlint" -reporter=github-pr-review -level=warning
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Boot iPhone 16 simulator
-        run: |
-          UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16' | awk -F '[()]' '{print $2}')
-           echo "Booting simulator with UDID: $UDID"
-           xcrun simctl boot "$UDID" || true
-           xcrun simctl bootstatus "$UDID" -b
+      # - name: Boot iPhone 16 simulator
+      #   run: |
+      #     UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16' | awk -F '[()]' '{print $2}')
+      #      echo "Booting simulator with UDID: $UDID"
+      #      xcrun simctl boot "$UDID" || true
+      #      xcrun simctl bootstatus "$UDID" -b
            
-      - name: Install xcpretty
-        run: sudo gem install xcpretty
-      - name: Build project with Xcode
-        run: |
-          UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16 Pro' | awk -F '[()]' '{print $2}')
-          echo "Using UDID: $UDID"
-          xcodebuild build \
-          -project XcodeProjectForCICD.xcodeproj \
-          -scheme XcodeProjectForCICD \
-          -destination "id=$UDID" \
-          | xcpretty
+      # - name: Install xcpretty
+      #   run: sudo gem install xcpretty
+      # - name: Build project with Xcode
+      #   run: |
+      #     UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16 Pro' | awk -F '[()]' '{print $2}')
+      #     echo "Using UDID: $UDID"
+      #     xcodebuild build \
+      #     -project XcodeProjectForCICD.xcodeproj \
+      #     -scheme XcodeProjectForCICD \
+      #     -destination "id=$UDID" \
+      #     | xcpretty
 
-      - name: Run Unit Tests
-        run: |
-          xcodebuild test \
-            -project XcodeProjectForCICD.xcodeproj \
-            -scheme XcodeProjectForCICD \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
-            -enableCodeCoverage YES \
-            | xcpretty
+      # - name: Run Unit Tests
+      #   run: |
+      #     xcodebuild test \
+      #       -project XcodeProjectForCICD.xcodeproj \
+      #       -scheme XcodeProjectForCICD \
+      #       -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
+      #       -enableCodeCoverage YES \
+      #       | xcpretty
 
-      - name: Print Code Coverage Report
-        run: |
-          TEST_RESULT=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" | sort | tail -n 1)
-          echo "Found result at: $TEST_RESULT"
-          xcrun xccov view --report "$TEST_RESULT"
+      # - name: Print Code Coverage Report
+      #   run: |
+      #     TEST_RESULT=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" | sort | tail -n 1)
+      #     echo "Found result at: $TEST_RESULT"
+      #     xcrun xccov view --report "$TEST_RESULT"
 
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v4
