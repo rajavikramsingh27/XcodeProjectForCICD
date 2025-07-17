@@ -56,6 +56,14 @@ jobs:
       - name: Run SwiftLint
         run: |
           swiftlint
+      
+      - name: Run SwiftLint with Reviewdog
+        uses: reviewdog/action-swiftlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
+          fail_on_error: false
           
       - name: Boot iPhone 16 simulator
         run: |
