@@ -2,9 +2,9 @@ name: Swift CI
 
 on:
   push:
-    branches: [master]
+    branches: [develop]
   pull_request:
-    branches: [master]
+    branches: [develop]
 
 jobs:
   build-and-test:
@@ -39,6 +39,23 @@ jobs:
 
       - name: List available simulators
         run: xcrun simctl list devices
+        
+      - name: Install Homebrew (if not installed)
+        run: |
+          if ! command -v brew &> /dev/null; then
+          echo "Installing Homebrew..."
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+          eval "$(/opt/homebrew/bin/brew shellenv)"
+          fi
+
+      - name: Install SwiftLint
+        run: |
+          brew install swiftlint
+
+      - name: Run SwiftLint
+        run: |
+          swiftlint --strict
 
       - name: Boot iPhone 16 simulator
         run: |
