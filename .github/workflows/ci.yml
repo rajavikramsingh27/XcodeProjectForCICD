@@ -14,8 +14,8 @@ jobs:
       - label-1
     permissions:
       contents: read
-      pull-requests: write
-      
+      pull-requests: write # This is correctly set at the job level
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -45,25 +45,30 @@ jobs:
         run: |
           eval "$(/opt/homebrew/bin/brew shellenv)"
           brew install swiftlint
+          # Verify SwiftLint installation, sometimes PATH isn't updated in same command block
+          which swiftlint || { echo "SwiftLint not found in PATH after install"; exit 1; }
 
-      - name: Run SwiftLint
-        run: swiftlint
+      # Remove the manual 'Run SwiftLint' step as it's not needed with reviewdog action
+      # - name: Run SwiftLint
+      #   run: swiftlint
 
-      - name: Install reviewdog (locally)
-        run: |
-          mkdir -p "$HOME/.local/bin"
-          curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b "$HOME/.local/bin"
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Check reviewdog version
-        run: $HOME/.local/bin/reviewdog -version
+      # Remove the manual 'Install reviewdog (locally)' and 'Check reviewdog version' steps
+      # as the reviewdog/action-swiftlint handles reviewdog installation internally.
+      # - name: Install reviewdog (locally)
+      #   run: |
+      #     mkdir -p "$HOME/.local/bin"
+      #     curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b "$HOME/.local/bin"
+      #     echo "$HOME/.local/bin" >> $GITHUB_PATH
+      # - name: Check reviewdog version
+      #   run: $HOME/.local/bin/reviewdog -version
 
       - name: Run SwiftLint with Reviewdog
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          swiftlint --reporter "xcode" | reviewdog -efm="%f:%l:%c: %m" -name="swiftlint" -reporter=github-pr-review -level=warning
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: reviewdog/action-swiftlint@v2 # Use the dedicated action
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review # Crucial for PR comments
+          # swiftlint_flags: "--strict" # Uncomment if you want to fail on warnings
+          fail_on_error: true # Ensure the check fails on SwiftLint errors
 
       # Uncomment and update if needed:
       # - name: Build project with Xcode
