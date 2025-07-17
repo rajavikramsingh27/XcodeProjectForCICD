@@ -57,10 +57,15 @@ jobs:
         run: |
           swiftlint
       
-      - name: Install reviewdog
+      - name: Install reviewdog (locally)
         run: |
-          curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b /usr/local/bin
-          
+          mkdir -p "$HOME/.local/bin"
+          curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Check reviewdog version
+        run: reviewdog -version
+        
       - name: Run SwiftLint with Reviewdog
         run: |
           swiftlint --reporter github-actions-logging | reviewdog -efm="%f:%l:%c: %m" -name="swiftlint" -reporter=github-pr-review -level=warning
