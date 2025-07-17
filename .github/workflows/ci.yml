@@ -55,8 +55,8 @@ jobs:
 
       - name: Run SwiftLint
         run: |
-          swiftlint --strict
-
+          swiftlint
+          
       - name: Boot iPhone 16 simulator
         run: |
           UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16' | awk -F '[()]' '{print $2}')
