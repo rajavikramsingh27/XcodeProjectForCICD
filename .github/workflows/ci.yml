@@ -57,7 +57,7 @@ jobs:
 
       - name: Run SwiftLint with Reviewdog
         run: |
-          swiftlint --reporter json | reviewdog -f=swiftlint -name="swiftlint" -reporter=github-pr-review -level=warning
+          swiftlint --reporter "xcode" | reviewdog -efm="%f:%l:%c: %m" -name="swiftlint" -reporter=github-pr-review -level=warning
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
