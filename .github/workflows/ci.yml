@@ -2,9 +2,9 @@ name: Swift CI
 
 on:
   push:
-    branches: [master]
+    branches: [develop]
   pull_request:
-    branches: [master]
+    branches: [develop]
 
 jobs:
   build-and-test:
@@ -39,6 +39,14 @@ jobs:
 
       - name: List available simulators
         run: xcrun simctl list devices
+
+      - name: Install SwiftLint
+        run: |
+          brew install swiftlint
+
+      - name: Run SwiftLint
+        run: |
+          swiftlint --strict
 
       - name: Boot iPhone 16 simulator
         run: |
