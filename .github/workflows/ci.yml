@@ -14,38 +14,28 @@ jobs:
     runs-on:
       - self-hosted
       - label-1
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Show macOS version
-        run: sw_vers
-
-      - name: List available Xcode versions
-        run: ls /Applications | grep Xcode
-
-      - name: Show available simulators (for debugging)
-        run: xcrun simctl list devices
-
-      - name: Show Only Booted/Opened simulators
-        run: xcrun simctl list devices | grep Booted
+      - name: Show macOS and Xcode info
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+          ls /Applications | grep Xcode
 
       - name: Set up Xcode 16.4
         run: sudo xcode-select -s /Applications/Xcode.app
 
-      - name: Show selected Xcode version
-        run: xcodebuild -version
-
-      - name: Display Swift version
-        run: swift --version
-
-      - name: List available simulators
-        run: xcrun simctl list devices
+      - name: Show available simulators
+        run: |
+          xcrun simctl list devices
+          echo "Booted Simulators:"
+          xcrun simctl list devices | grep Booted
 
       - name: Setup Homebrew PATH (Apple Silicon)
-        run: echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile && eval "$(/opt/homebrew/bin/brew shellenv)"
-      
-      - name: Setup Homebrew environment
         run: |
           echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
           eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -56,9 +46,8 @@ jobs:
           brew install swiftlint
 
       - name: Run SwiftLint
-        run: |
-          swiftlint
-      
+        run: swiftlint
+
       - name: Install reviewdog (locally)
         run: |
           mkdir -p "$HOME/.local/bin"
@@ -66,48 +55,36 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Check reviewdog version
-        run: reviewdog -version
+        run: $HOME/.local/bin/reviewdog -version
 
       - name: Run SwiftLint with Reviewdog
         run: |
-          swiftlint --reporter github-actions-logging | reviewdog -efm="%f:%l:%c: %m" -name="swiftlint" -reporter=github-pr-review -level=warning
+          swiftlint --reporter "checkstyle" | $HOME/.local/bin/reviewdog \
+            -efm="%f:%l:%c: %m" \
+            -name="swiftlint" \
+            -reporter=github-pr-review \
+            -fail-on-error=false \
+            -level=warning
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Boot iPhone 16 simulator
-      #   run: |
-      #     UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16' | awk -F '[()]' '{print $2}')
-      #      echo "Booting simulator with UDID: $UDID"
-      #      xcrun simctl boot "$UDID" || true
-      #      xcrun simctl bootstatus "$UDID" -b
-           
-      # - name: Install xcpretty
-      #   run: sudo gem install xcpretty
+      # Uncomment and update if needed:
       # - name: Build project with Xcode
       #   run: |
-      #     UDID=$(xcrun simctl list devices | grep -m1 'iPhone 16 Pro' | awk -F '[()]' '{print $2}')
-      #     echo "Using UDID: $UDID"
       #     xcodebuild build \
       #     -project XcodeProjectForCICD.xcodeproj \
       #     -scheme XcodeProjectForCICD \
-      #     -destination "id=$UDID" \
-      #     | xcpretty
+      #     -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'
 
       # - name: Run Unit Tests
       #   run: |
       #     xcodebuild test \
-      #       -project XcodeProjectForCICD.xcodeproj \
-      #       -scheme XcodeProjectForCICD \
-      #       -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
-      #       -enableCodeCoverage YES \
-      #       | xcpretty
+      #     -project XcodeProjectForCICD.xcodeproj \
+      #     -scheme XcodeProjectForCICD \
+      #     -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
+      #     -enableCodeCoverage YES
 
-      # - name: Print Code Coverage Report
-      #   run: |
-      #     TEST_RESULT=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" | sort | tail -n 1)
-      #     echo "Found result at: $TEST_RESULT"
-      #     xcrun xccov view --report "$TEST_RESULT"
-
+      # Replace below with actual paths
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v4
         with:
