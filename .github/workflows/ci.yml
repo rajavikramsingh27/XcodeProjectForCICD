@@ -2,9 +2,9 @@ name: Swift CI
 
 on:
   push:
-    branches: [develop]
+    branches: [master, develop]
   pull_request:
-    branches: [develop]
+    branches: [master, develop]
 
 jobs:
   build-and-test:
@@ -39,7 +39,16 @@ jobs:
 
       - name: List available simulators
         run: xcrun simctl list devices
-        
+
+      - name: Setup Homebrew PATH (Apple Silicon)
+        run: echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile && eval "$(/opt/homebrew/bin/brew shellenv)"
+      
+      - name: Add Homebrew to PATH manually
+        run: |
+          export PATH="/opt/homebrew/bin:$PATH"
+          brew --version
+          brew install swiftlint
+
       - name: Install Homebrew (if not installed)
         run: |
           if ! command -v brew &> /dev/null; then
@@ -90,6 +99,7 @@ jobs:
           TEST_RESULT=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" | sort | tail -n 1)
           echo "Found result at: $TEST_RESULT"
           xcrun xccov view --report "$TEST_RESULT"
+          
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v4
         with:
