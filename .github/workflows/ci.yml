@@ -6,17 +6,16 @@ on:
   pull_request:
     branches: [master, develop]
 
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
   build-and-test:
     name: Build & Test (XcodeProjectForCICD)
     runs-on:
       - self-hosted
       - label-1
-
+    permissions:
+      contents: read
+      pull-requests: write
+      
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
