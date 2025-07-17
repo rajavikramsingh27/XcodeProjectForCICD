@@ -5,20 +5,24 @@ on:
     branches: [master, develop]
   pull_request:
     branches: [master, develop]
+    paths: # Only trigger if these files change in a PR
+      - '.github/workflows/swiftlint.yml'
+      - '.swiftlint.yml'
+      - '**/*.swift' # Lint only Swift files
 
 jobs:
   build-and-test:
     name: Build & Test (XcodeProjectForCICD)
     runs-on:
       - self-hosted
-      - label-1
+      - label-1 # Your custom self-hosted runner label
     permissions:
-      contents: read
-      pull-requests: write # This is correctly set at the job level
+      contents: read # Required to checkout code
+      pull-requests: write # Required for posting annotations/comments if using certain actions (good to have for linting actions)
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Use the latest stable version of checkout
 
       - name: Show macOS and Xcode info
         run: |
@@ -28,7 +32,7 @@ jobs:
           ls /Applications | grep Xcode
 
       - name: Set up Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode.app
+        run: sudo xcode-select -s /Applications/Xcode.app # Ensure this path is correct for your runner
 
       - name: Show available simulators
         run: |
@@ -41,34 +45,23 @@ jobs:
           echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
           eval "$(/opt/homebrew/bin/brew shellenv)"
 
+      # This step installs SwiftLint for the action to use.
+      # The norio-nomura/action-swiftlint usually handles installation internally,
+      # but explicitly installing it ensures it's available in the PATH for other potential uses
+      # or if the action's internal installation logic needs it pre-installed.
       - name: Install SwiftLint
         run: |
-          eval "$(/opt/homebrew/bin/brew shellenv)"
+          eval "$(/opt/homebrew/bin/brew shellenv)" # Re-evaluate shellenv if needed for the PATH
           brew install swiftlint
-          # Verify SwiftLint installation, sometimes PATH isn't updated in same command block
+          # Verify SwiftLint installation. Remove if not needed.
           which swiftlint || { echo "SwiftLint not found in PATH after install"; exit 1; }
 
-      # Remove the manual 'Run SwiftLint' step as it's not needed with reviewdog action
-      # - name: Run SwiftLint
-      #   run: swiftlint
-
-      # Remove the manual 'Install reviewdog (locally)' and 'Check reviewdog version' steps
-      # as the reviewdog/action-swiftlint handles reviewdog installation internally.
-      # - name: Install reviewdog (locally)
-      #   run: |
-      #     mkdir -p "$HOME/.local/bin"
-      #     curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b "$HOME/.local/bin"
-      #     echo "$HOME/.local/bin" >> $GITHUB_PATH
-      # - name: Check reviewdog version
-      #   run: $HOME/.local/bin/reviewdog -version
-
-      - name: Run SwiftLint with Reviewdog
-        uses: reviewdog/action-swiftlint@v2 # Use the dedicated action
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review # Crucial for PR comments
-          # swiftlint_flags: "--strict" # Uncomment if you want to fail on warnings
-          fail_on_error: true # Ensure the check fails on SwiftLint errors
+      # --- SwiftLint Integration (Annotations on PR) ---
+      - name: Run SwiftLint and display annotations on PR
+        uses: norio-nomura/action-swiftlint@3.2.1 # Use the specific version
+        # No 'with' block needed here for basic annotation output,
+        # as the default behavior reports to GitHub Actions log format.
+      # --- End SwiftLint Integration ---
 
       # Uncomment and update if needed:
       # - name: Build project with Xcode
