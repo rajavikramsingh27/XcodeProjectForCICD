@@ -1,99 +1,12 @@
-name: Swift CI
+name: SwiftLint
 
 on:
-  push:
-    branches: [master, develop]
   pull_request:
-    branches: [master, develop]
-    paths: # Only trigger if these files change in a PR
-      - '.github/workflows/swiftlint.yml'
-      - '.swiftlint.yml'
-      - '**/*.swift' # Lint only Swift files
 
 jobs:
-  build-and-test:
-    name: Build & Test (XcodeProjectForCICD)
-    runs-on:
-      - self-hosted
-      - label-1 # Your custom self-hosted runner label
-    permissions:
-      contents: read # Required to checkout code
-      pull-requests: write # Required for posting annotations/comments if using certain actions (good to have for linting actions)
-
+  SwiftLint:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4 # Use the latest stable version of checkout
-
-      - name: Show macOS and Xcode info
-        run: |
-          sw_vers
-          xcodebuild -version
-          swift --version
-          ls /Applications | grep Xcode
-
-      - name: Set up Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode.app # Ensure this path is correct for your runner
-
-      - name: Show available simulators
-        run: |
-          xcrun simctl list devices
-          echo "Booted Simulators:"
-          xcrun simctl list devices | grep Booted
-
-      - name: Setup Homebrew PATH (Apple Silicon)
-        run: |
-          echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-          eval "$(/opt/homebrew/bin/brew shellenv)"
-
-      # This step installs SwiftLint for the action to use.
-      # The norio-nomura/action-swiftlint usually handles installation internally,
-      # but explicitly installing it ensures it's available in the PATH for other potential uses
-      # or if the action's internal installation logic needs it pre-installed.
-      - name: Install SwiftLint
-        run: |
-          eval "$(/opt/homebrew/bin/brew shellenv)" # Re-evaluate shellenv if needed for the PATH
-          brew install swiftlint
-          # Verify SwiftLint installation. Remove if not needed.
-          which swiftlint || { echo "SwiftLint not found in PATH after install"; exit 1; }
-
-      # --- SwiftLint Integration (Annotations on PR) ---
-      - name: Run SwiftLint and display annotations on PR
-        uses: norio-nomura/action-swiftlint@3.2.1 # Use the specific version
-        # No 'with' block needed here for basic annotation output,
-        # as the default behavior reports to GitHub Actions log format.
-      # --- End SwiftLint Integration ---
-
-      # Uncomment and update if needed:
-      # - name: Build project with Xcode
-      #   run: |
-      #     xcodebuild build \
-      #     -project XcodeProjectForCICD.xcodeproj \
-      #     -scheme XcodeProjectForCICD \
-      #     -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'
-
-      # - name: Run Unit Tests
-      #   run: |
-      #     xcodebuild test \
-      #     -project XcodeProjectForCICD.xcodeproj \
-      #     -scheme XcodeProjectForCICD \
-      #     -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
-      #     -enableCodeCoverage YES
-
-      # Replace below with actual paths
-      - name: Upload Code Coverage Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: CodeCoverageReport
-          path: path/to/code-coverage.txt
-
-      - name: Upload All CI Logs
-        uses: actions/upload-artifact@v4
-        with:
-          name: AllLogs
-          path: logs/*.log
-
-      - name: Upload Xcode Result Bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: XcodeResultBundle
-          path: result.bundle
+      - uses: actions/checkout@v3
+      - name: GitHub Action for SwiftLint
+        uses: stanfordbdhg/action-swiftlint@v4
