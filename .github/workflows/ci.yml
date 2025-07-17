@@ -43,23 +43,14 @@ jobs:
       - name: Setup Homebrew PATH (Apple Silicon)
         run: echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile && eval "$(/opt/homebrew/bin/brew shellenv)"
       
-      - name: Add Homebrew to PATH manually
+      - name: Setup Homebrew environment
         run: |
-          export PATH="/opt/homebrew/bin:$PATH"
-          brew --version
-          brew install swiftlint
-
-      - name: Install Homebrew (if not installed)
-        run: |
-          if ! command -v brew &> /dev/null; then
-          echo "Installing Homebrew..."
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
           eval "$(/opt/homebrew/bin/brew shellenv)"
-          fi
 
       - name: Install SwiftLint
         run: |
+          eval "$(/opt/homebrew/bin/brew shellenv)"
           brew install swiftlint
 
       - name: Run SwiftLint
@@ -99,7 +90,7 @@ jobs:
           TEST_RESULT=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" | sort | tail -n 1)
           echo "Found result at: $TEST_RESULT"
           xcrun xccov view --report "$TEST_RESULT"
-          
+
       - name: Upload Code Coverage Report
         uses: actions/upload-artifact@v4
         with:
