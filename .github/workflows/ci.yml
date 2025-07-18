@@ -51,6 +51,16 @@ jobs:
           -sdk iphonesimulator \
           -configuration Debug
 
+  swiftlint:
+    name: SwiftLint
+    runs-on: ubuntu-latest
+    needs: setup-environment  # optional, remove if not needed
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: GitHub Action for SwiftLint
+        uses: stanfordbdhg/action-swiftlint@v4
+
   build:
     name: Build Project
     needs: analyze
