@@ -90,25 +90,31 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests with Coverage
         run: |
-          xcodebuild test \
-          -project XcodeProjectForCICD.xcodeproj \
-          -scheme XcodeProjectForCICD \
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
-          -enableCodeCoverage YES
+            xcodebuild test \
+            -project XcodeProjectForCICD.xcodeproj \
+            -scheme XcodeProjectForCICD \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
+            -enableCodeCoverage YES \
+            -resultBundlePath result.bundle
 
-      - name: Upload Code Coverage Report
+      - name: Generate Code Coverage Report
+        run: |
+          xcrun xccov view --report result.bundle > coverage.txt
+          xcrun xccov view --report --json result.bundle > coverage.json
+
+      - name: Upload Code Coverage Text Report
         uses: actions/upload-artifact@v4
         with:
           name: CodeCoverageReport
-          path: path/to/code-coverage.txt
+          path: coverage.txt
 
-      - name: Upload All CI Logs
+      - name: Upload Code Coverage JSON Report
         uses: actions/upload-artifact@v4
         with:
-          name: AllLogs
-          path: logs/*.log
+          name: CodeCoverageReportJSON
+          path: coverage.json
 
       - name: Upload Xcode Result Bundle
         uses: actions/upload-artifact@v4
