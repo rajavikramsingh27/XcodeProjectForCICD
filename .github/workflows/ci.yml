@@ -28,6 +28,17 @@ jobs:
       - name: Set up Xcode 16.4
         run: sudo xcode-select -s /Applications/Xcode.app
 
+      - name: Reset Simulators and Clean Derived Data
+        run: |
+          xcrun simctl shutdown all || true
+          xcrun simctl erase all || true
+          rm -rf ~/Library/Developer/Xcode/DerivedData/*
+
+      - name: Boot simulator
+        run: |
+          xcrun simctl boot "iPhone 16 Pro" || true
+          sleep 10
+
       - name: Show available simulators
         run: |
           xcrun simctl list devices
@@ -41,7 +52,12 @@ jobs:
             -scheme XcodeProjectForCICD \
             -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' \
             -enableCodeCoverage YES \
-            -resultBundlePath result.bundle
+            -resultBundlePath result.xcresult
+
+      - name: View Test Summary
+        run: |
+          xcrun xcresulttool get --path result.xcresult --format json > raw-result.json
+          head -n 50 raw-result.json
 
       - name: Generate Code Coverage Report
         run: |
@@ -52,16 +68,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CodeCoverageReport
-          path: coverage.txt
-
-      - name: Upload Code Coverage JSON Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: CodeCoverageReportJSON
-          path: coverage.json
-
-      - name: Upload Xcode Result Bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: XcodeResultBundle
-          path: result.xcresult
+          path: |
+            coverage.txt
+            coverage.json
+            result.xcresult
