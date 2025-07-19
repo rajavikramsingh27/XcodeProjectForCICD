@@ -64,6 +64,18 @@ jobs:
           xcrun xccov view --report result.xcresult > coverage.txt
           xcrun xccov view --report --json result.xcresult > coverage.json
 
+      - name: Fail if code coverage < 80%
+        run: |
+          total=$(xcrun xccov view --report result.xcresult | \
+            awk 'BEGIN { total=0; count=0 } NR>1 { gsub(/%/, "", $3); total+=$3; count++ } END { if (count>0) print total/count; else print 0 }')
+          echo "Total Code Coverage: $total%"
+          if (( $(echo "$total < 80.0" | bc -l) )); then
+            echo "❌ Code coverage ($total%) is below 80% threshold."
+            exit 1
+          else
+            echo "✅ Code coverage ($total%) meets threshold."
+          fi
+
       - name: Upload Code Coverage Text Report
         uses: actions/upload-artifact@v4
         with:
@@ -72,6 +84,7 @@ jobs:
             coverage.txt
             coverage.json
             result.xcresult
+
       - name: Comment Coverage on PR
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
