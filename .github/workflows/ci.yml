@@ -56,9 +56,9 @@ jobs:
 
       - name: View Test Summary
         run: |
-          xcrun xcresulttool get --path result.xcresult --format json > raw-result.json
+          xcrun xcresulttool get --legacy --path result.xcresult --format json > raw-result.json
           head -n 50 raw-result.json
-
+          
       - name: Generate Code Coverage Report
         run: |
           xcrun xccov view --report result.xcresult > coverage.txt
