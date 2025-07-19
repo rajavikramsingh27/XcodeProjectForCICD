@@ -58,7 +58,7 @@ jobs:
         run: |
           xcrun xcresulttool get --legacy --path result.xcresult --format json > raw-result.json
           head -n 50 raw-result.json
-          
+
       - name: Generate Code Coverage Report
         run: |
           xcrun xccov view --report result.xcresult > coverage.txt
@@ -72,3 +72,8 @@ jobs:
             coverage.txt
             coverage.json
             result.xcresult
+      - name: Comment Coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: coverage.txt
