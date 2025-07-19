@@ -61,8 +61,8 @@ jobs:
 
       - name: Generate Code Coverage Report
         run: |
-          xcrun xccov view --report result.bundle > coverage.txt
-          xcrun xccov view --report --json result.bundle > coverage.json
+          xcrun xccov view --report result.xcresult > coverage.txt
+          xcrun xccov view --report --json result.xcresult > coverage.json
 
       - name: Upload Code Coverage Text Report
         uses: actions/upload-artifact@v4
