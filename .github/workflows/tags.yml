@@ -1,0 +1,51 @@
+name: Uploading Tags
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build-and-test:
+    name: Tags-Auto-Increment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Git config
+        run: |
+          git config user.name "rajavikramsingh27"
+          git config user.email "rajavikramsingh27@gmail.com"
+
+      - name: Auto-Increment Tag
+        id: tagging
+        run: |
+          git fetch --tags
+          latest_tag=$(git tag | sort -V | tail -n 1)
+          echo "Latest tag: $latest_tag"
+          if [[ -z "$latest_tag" ]]; then
+            next_tag="v1.0.0"
+          else
+            IFS='.' read -r major minor patch <<< "${latest_tag#v}"
+            patch=$((patch + 1))
+            next_tag="v$major.$minor.$patch"
+          fi
+          echo "next_tag=$next_tag" >> $GITHUB_OUTPUT
+
+      - name: Create Git Tag
+        run: |
+          git tag ${{ steps.tagging.outputs.next_tag }}
+          git push origin ${{ steps.tagging.outputs.next_tag }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tagging.outputs.next_tag }}
+          name: Release ${{ steps.tagging.outputs.next_tag }}
+          generate_release_notes: true
