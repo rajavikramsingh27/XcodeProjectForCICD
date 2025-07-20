@@ -33,6 +33,12 @@ jobs:
           xcrun simctl shutdown all || true
           xcrun simctl erase all || true
           rm -rf ~/Library/Developer/Xcode/DerivedData/*
+          
+      - name: Remove old result bundle
+        run: |
+          if [ -d "result.xcresult" ]; then
+            rm -rf result.xcresult
+          fi
 
       - name: Boot simulator
         run: |
@@ -72,12 +78,6 @@ jobs:
             coverage.txt
             coverage.json
             result.xcresult
-            
-      - name: Remove old result bundle
-        run: |
-          if [ -d "result.xcresult" ]; then
-            rm -rf result.xcresult
-          fi
 
       - name: Generate Markdown Coverage Report (Barecheck Style)
         run: |
