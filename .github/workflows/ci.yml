@@ -72,6 +72,12 @@ jobs:
             coverage.txt
             coverage.json
             result.xcresult
+            
+      - name: Remove old result bundle
+        run: |
+          if [ -d "result.xcresult" ]; then
+            rm -rf result.xcresult
+          fi
 
       - name: Generate Markdown Coverage Report (Barecheck Style)
         run: |
@@ -94,19 +100,19 @@ jobs:
             echo "**✅ Coverage meets threshold.**" >> coverage.md
           # fi
 
-      # - name: Generate Uncovered Line-Level Coverage Report
-      #   run: |
-      #     echo "| File | Line | Status |" > uncovered-lines.md
-      #     echo "|------|------|--------|" >> uncovered-lines.md
+      - name: Generate Uncovered Line-Level Coverage Report
+        run: |
+          echo "| File | Line | Status |" > uncovered-lines.md
+          echo "|------|------|--------|" >> uncovered-lines.md
 
-      #     for file in $(xcrun xccov view --file-list result.xcresult); do
-      #       xcrun xccov view --file --line result.xcresult "$file" | while read -r line; do
-      #         if echo "$line" | grep -q ": 0$"; then
-      #           line_num=$(echo "$line" | cut -d ":" -f2 | cut -d " " -f1)
-      #           echo "| $file | $line_num | ❌ Not Covered |" >> uncovered-lines.md
-      #         fi
-      #       done
-      #     done
+          for file in $(xcrun xccov view --file-list result.xcresult); do
+            xcrun xccov view --file --line result.xcresult "$file" | while read -r line; do
+              if echo "$line" | grep -q ": 0$"; then
+                line_num=$(echo "$line" | cut -d ":" -f2 | cut -d " " -f1)
+                echo "| $file | $line_num | ❌ Not Covered |" >> uncovered-lines.md
+              fi
+            done
+          done
 
       - name: Upload Markdown Coverage Report
         uses: actions/upload-artifact@v4
@@ -119,7 +125,7 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: coverage.md
-
+          
       - name: Comment Uncovered Lines on PR
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
