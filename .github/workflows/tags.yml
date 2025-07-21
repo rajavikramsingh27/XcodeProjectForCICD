@@ -6,29 +6,30 @@ on:
       - develop
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: write  # Required to push tags & create release
 
 jobs:
-  build-and-test:
-    name: Tags-Auto-Increment
+  tags-auto-increment:
+    name: Auto-Increment & Release Tag
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Git config
+      - name: Set up Git Config
         run: |
-          git config user.name "rajavikramsingh27"
-          git config user.email "rajavikramsingh27@gmail.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Auto-Increment Tag
+      - name: Determine Next Tag
         id: tagging
         run: |
           git fetch --tags
           latest_tag=$(git tag | sort -V | tail -n 1)
+
           echo "Latest tag: $latest_tag"
+
           if [[ -z "$latest_tag" ]]; then
             next_tag="v1.0.0"
           else
@@ -36,16 +37,21 @@ jobs:
             patch=$((patch + 1))
             next_tag="v$major.$minor.$patch"
           fi
+
+          echo "next_tag=$next_tag" >> $GITHUB_ENV
           echo "next_tag=$next_tag" >> $GITHUB_OUTPUT
 
-      - name: Create Git Tag
+      - name: Push Tag using PAT
+        env:
+          TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          git tag ${{ steps.tagging.outputs.next_tag }}
-          git push origin ${{ steps.tagging.outputs.next_tag }}
+          git tag ${{ env.next_tag }}
+          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
+          git push origin ${{ env.next_tag }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tagging.outputs.next_tag }}
-          name: Release ${{ steps.tagging.outputs.next_tag }}
+          tag_name: ${{ env.next_tag }}
+          name: Release ${{ env.next_tag }}
           generate_release_notes: true
