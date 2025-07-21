@@ -38,8 +38,11 @@ jobs:
           fi
           echo "next_tag=$next_tag" >> $GITHUB_OUTPUT
 
-      - name: Create Git Tag
+      - name: Push Tag with PAT
+        env:
+          TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
           git tag ${{ steps.tagging.outputs.next_tag }}
           git push origin ${{ steps.tagging.outputs.next_tag }}
 
